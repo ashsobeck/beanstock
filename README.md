@@ -1,10 +1,10 @@
 # Project beanstock
 
-One Paragraph of project description goes here
+An API that detects changes in popular coffee roasters
 
-## Getting Started
+### Goal
+- Start with Shopify based roasters (interfaced)
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ## MakeFile
 
