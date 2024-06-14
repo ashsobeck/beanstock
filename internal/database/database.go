@@ -10,10 +10,13 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"beanstock/internal/types"
 )
 
 type Service interface {
 	Health() map[string]string
+	StoreWebsite(site types.Website) error
 }
 
 type service struct {
@@ -50,4 +53,14 @@ func (s *service) Health() map[string]string {
 	return map[string]string{
 		"message": "It's healthy",
 	}
+}
+
+func (s *service) StoreWebsite(site types.Website) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	coll := s.db.Database("beanstock").Collection("website")
+	_, err := coll.InsertOne(ctx, site)
+
+	return err
 }
