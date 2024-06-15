@@ -1,11 +1,12 @@
 package diff
 
 import (
-	"beanstock/internal/database"
 	"beanstock/internal/types"
 	"crypto/sha256"
-	"io"
-	"net/http"
+	"encoding/json"
+	"fmt"
+	// "io"
+	// "net/http"
 )
 
 type Differ interface {
@@ -14,22 +15,39 @@ type Differ interface {
 
 type differ struct{}
 
-func (d *differ) HashDiff(site types.Website) (bool, error) {
-	res, err := http.Get(site.Url)
-	if err != nil {
-		return false, err
+func HashDiff(site types.Website, body []byte) (bool, error) {
+	// res, err := http.Get(site.Url)
+	// if err != nil {
+	// 	return false, err
+	// }
+	//
+	// defer res.Body.Close()
+	//
+	// body, readErr := io.ReadAll(res.Body)
+	// if readErr != nil {
+	// 	return false, readErr
+	// }
+
+	var foundObj map[string]interface{}
+	unmarshalErr := json.Unmarshal(body, &foundObj)
+	if unmarshalErr != nil {
+		return false, unmarshalErr
 	}
 
-	defer res.Body.Close()
-	json, readErr := io.ReadAll(res.Body)
-	if readErr != nil {
-		return false, readErr
+	// json.Marshal sorts keys
+	sorted, marshalErr := json.Marshal(foundObj)
+	if marshalErr != nil {
+		return false, marshalErr
 	}
 
-	newHash, hashErr := sha256.New().Write(json)
+	fmt.Println(string(sorted))
+
+	newHash, hashErr := sha256.New().Write(sorted)
 	if hashErr != nil {
 		return false, hashErr
 	}
+
+	fmt.Println(site.LastHash, newHash)
 
 	if newHash != site.LastHash {
 		return true, nil
