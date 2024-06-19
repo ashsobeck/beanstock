@@ -8,6 +8,7 @@ import (
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -17,6 +18,7 @@ import (
 type Service interface {
 	Health() map[string]string
 	StoreWebsite(site types.Website) error
+	GetWebsite(id string) (types.Website, error)
 }
 
 type service struct {
@@ -63,4 +65,15 @@ func (s *service) StoreWebsite(site types.Website) error {
 	_, err := coll.InsertOne(ctx, site)
 
 	return err
+}
+
+func (s *service) GetWebsite(id string) (site types.Website, e error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	coll := s.db.Database("beanstock").Collection("website")
+	filter := bson.D{{Key: "id", Value: id}}
+	e = coll.FindOne(ctx, filter).Decode(&site)
+
+	return site, e
 }
